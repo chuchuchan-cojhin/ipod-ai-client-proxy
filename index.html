@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPod AI Client</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; margin: 10px; background: #f0f0f0; color: #333; }
+        #chatbox { background: white; border: 1px solid #ccc; height: 250px; overflow-y: scroll; padding: 8px; margin-bottom: 10px; font-size: 14px; }
+        input[type="text"] { width: 70%; padding: 6px; font-size: 14px; }
+        button { width: 25%; padding: 6px; font-size: 14px; }
+        .user { color: blue; margin-bottom: 6px; }
+        .ai { color: green; margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+    <h3>iPod AI Chat</h3>
+    <div id="chatbox"></div>
+    <input type="text" id="prompt" placeholder="メッセージを入力...">
+    <button onclick="sendMsg()">送信</button>
+
+    <script>
+        // 古いiOSのSafariでも動くようにレトロなXMLHttpRequestを使用するか、最低限のfetchを使用
+        function sendMsg() {
+            var prompt = document.getElementById('prompt').value;
+            var chatbox = document.getElementById('chatbox');
+            if(!prompt) return;
+
+            chatbox.innerHTML += '<div class="user"><b>You:</b> ' + prompt + '</div>';
+            document.getElementById('prompt').value = '';
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            // ステップ1で作成したCloudflare WorkersのURLを指定
+            var workerUrl = 'https://your-worker-subdomain.workers.dev';
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', workerUrl, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var res = JSON.parse(xhr.responseText);
+                        chatbox.innerHTML += '<div class="ai"><b>AI:</b> ' + res.reply + '</div>';
+                    } else {
+                        chatbox.innerHTML += '<div class="ai" style="color:red;">Error: 通信に失敗しました</div>';
+                    }
+                    chatbox.scrollTop = chatbox.scrollHeight;
+                }
+            };
+            xhr.send(JSON.stringify({ prompt: prompt }));
+        }
+    </script>
+</body>
+      </html>
