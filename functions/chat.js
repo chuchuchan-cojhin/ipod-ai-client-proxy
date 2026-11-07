@@ -4,7 +4,6 @@ export async function onRequestPost(context) {
     const body = await request.json();
     const prompt = body.prompt;
 
-    // OpenAI APIを叩く処理
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
